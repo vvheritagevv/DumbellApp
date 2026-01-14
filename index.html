@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <meta name="color-scheme" content="dark" />
+  <title>Dumbbell Strength (5-Day)</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <style>
+    :root { --bg:#0b1220; --card:#111827; --muted:#9ca3af; --text:#e5e7eb; --accent:#22c55e; --border:#1f2937; }
+    *{ box-sizing:border-box; }
+    html, body { width:100%; max-width:100%; overflow-x:hidden; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background:linear-gradient(180deg,#050814, #0b1220);
+      color:var(--text);
+    }
+    header{
+      position:sticky; top:0; z-index:10;
+      background:rgba(5,8,20,.85);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid var(--border);
+    }
+    .wrap{ max-width:920px; margin:0 auto; padding:16px; min-width:0; }
+    h1{ font-size:20px; margin:0; letter-spacing:.2px; }
+    .sub{ color:var(--muted); font-size:12px; margin-top:4px; }
+    .grid{ display:grid; grid-template-columns: 1fr; gap:12px; margin-top:14px; }
+    @media (min-width: 900px){ .grid{ grid-template-columns: 1.2fr .8fr; } }
+    .card{
+      background:rgba(17,24,39,.9);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+      min-width:0;
+    }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .pill{
+      border:1px solid var(--border);
+      background:rgba(0,0,0,.15);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .pill.active{ border-color: rgba(34,197,94,.6); box-shadow: 0 0 0 3px rgba(34,197,94,.15) inset; }
+    .btn{
+      border:1px solid var(--border);
+      background:rgba(0,0,0,.15);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      max-width:100%;
+    }
+    .btn.primary{ background:rgba(34,197,94,.15); border-color: rgba(34,197,94,.6); }
+    .btn.danger{ background:rgba(239,68,68,.15); border-color: rgba(239,68,68,.5); }
+    .btn:active, .pill:active{ transform: translateY(1px); }
+    .muted{ color:var(--muted); font-size:13px; line-height:1.35; }
+    .sectionTitle{ font-weight:650; margin:0 0 8px 0; font-size:14px; letter-spacing:.2px; }
+    .exercise{
+      padding:10px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:rgba(0,0,0,.12);
+      margin-top:10px;
+      min-width:0;
+    }
+    .exerciseTop{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+    .exerciseName{ font-weight:650; font-size:14px; }
+    .sets{ color:var(--muted); font-size:12px; margin-top:2px; }
+    .inputs{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; margin-top:10px; min-width:0; }
+    .inputs label{ display:block; font-size:11px; color:var(--muted); margin-bottom:4px; }
+    input{
+      width:100%;
+      padding:10px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:rgba(0,0,0,.15);
+      color:var(--text);
+      outline:none;
+      min-width:0;
+    }
+    input:focus{ border-color: rgba(34,197,94,.6); box-shadow: 0 0 0 3px rgba(34,197,94,.12); }
+    .checkRow{ display:flex; justify-content:space-between; align-items:center; margin-top:10px; gap:10px; }
+    .small{ font-size:12px; color:var(--muted); }
+    .toggle{
+      width:48px; height:28px; border-radius:999px; border:1px solid var(--border);
+      background:rgba(0,0,0,.2); position:relative; cursor:pointer; flex: 0 0 auto;
+    }
+    .knob{ width:22px; height:22px; border-radius:999px; background:#cbd5e1; position:absolute; top:2px; left:2px; transition: all .15s ease; }
+    .toggle.on{ background:rgba(34,197,94,.22); border-color: rgba(34,197,94,.6); }
+    .toggle.on .knob{ left:24px; background:#bbf7d0; }
+    .hr{ height:1px; background:var(--border); margin:12px 0; }
+    textarea{
+      width:100%;
+      min-height:72px;
+      border-radius:12px;
+      padding:10px;
+      border:1px solid var(--border);
+      background:rgba(0,0,0,.15);
+      color:var(--text);
+      min-width:0;
+    }
+    .toast{
+      position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%);
+      background:rgba(17,24,39,.95); border:1px solid var(--border);
+      padding:10px 12px; border-radius:999px; color:var(--text); font-size:13px; display:none;
+      max-width: calc(100vw - 24px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .rightActions{ display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-start; }
+
+    @media (max-width: 640px) {
+      .inputs { grid-template-columns: 1fr !important; }
+      .exerciseTop { flex-direction: column; align-items: flex-start; }
+      .checkRow { flex-direction: column; align-items: flex-start; }
+      header .row { gap: 12px; }
+    }
+    @media (max-width: 380px) {
+      .wrap { padding: 12px; }
+      .btn, .pill { padding: 9px 10px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="row" style="justify-content:space-between;">
+        <div>
+          <h1>Dumbbell Strength (5-Day)</h1>
+          <div class="sub">Installable PWA • Offline capable • No sign-in • Local storage + backups</div>
+        </div>
+        <div class="rightActions">
+          <button class="btn" id="todayBtn">Today</button>
+          <button class="btn" id="swapBtn">Swap Days</button>
+          <button class="btn" id="shareBtn">Share Backup</button>
+          <button class="btn" id="exportBtn">Export</button>
+          <button class="btn" id="importBtn">Import</button>
+          <button class="btn danger" id="resetBtn">Reset</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="grid">
+      <div class="card">
+        <div class="sectionTitle">Pick your calendar day</div>
+        <div class="row" id="dayPills"></div>
+        <div class="hr"></div>
+        <div class="row" style="justify-content:space-between;">
+          <div class="muted" id="dayMeta"></div>
+          <button class="btn primary" id="saveSessionBtn">Save Session</button>
+        </div>
+        <div id="exerciseList"></div>
+      </div>
+
+      <div class="card">
+        <div class="sectionTitle">Rules for strength gains</div>
+        <div class="muted">
+          • Controlled reps (~2 sec down, 1 sec up).<br/>
+          • Usually stop with ~1–2 reps in reserve.<br/>
+          • Hit top of rep range? Add weight next time (or add reps).<br/>
+          • Rest 90–120s big lifts, 60–90s accessories.
+        </div>
+
+        <div class="hr"></div>
+        <div class="sectionTitle">Quick notes</div>
+        <textarea id="globalNotes" placeholder="Sleep, soreness, pain, tweaks, what to improve next time…"></textarea>
+
+        <div class="hr"></div>
+        <div class="sectionTitle">Backup</div>
+        <div class="checkRow">
+          <div class="small">Auto-backup (Share) when saving</div>
+          <div class="toggle" id="autoBackupToggle"><div class="knob"></div></div>
+        </div>
+        <div class="muted" style="margin-top:8px;">
+          “Share Backup” uses Android’s share sheet (Files/Drive/Email/etc). No sign-in in the app.
+        </div>
+
+        <div class="hr"></div>
+        <div class="sectionTitle">Recent sessions</div>
+        <div class="muted" id="recentSessions">No sessions yet.</div>
+
+        <div class="hr"></div>
+        <div class="muted">
+          To install: open this site in Chrome → <b>⋮</b> → <b>Install app</b> (or <b>Add to Home screen</b>).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const DEFAULT_SCHEDULE = { mon:"day1", tue:"day2", wed:"off", thu:"day3", fri:"day4", sat:"day5", sun:"off" };
+
+    const DAY_DEFS = {
+      day1:{ id:"day1", label:"Day 1", name:"Push", focus:"Chest / Shoulders / Triceps",
+        exercises:[
+          { name:"Dumbbell Bench Press", sets:"4×6–8" },
+          { name:"Seated Overhead Press", sets:"3×8–10" },
+          { name:"Dumbbell Incline Press", sets:"3×10–12" },
+          { name:"Dumbbell Lateral Raises", sets:"3×12–15" },
+          { name:"Overhead Dumbbell Triceps Extension", sets:"3×10–12" },
+        ]},
+      day2:{ id:"day2", label:"Day 2", name:"Pull", focus:"Back / Biceps",
+        exercises:[
+          { name:"Dumbbell Bent-Over Rows", sets:"4×6–8" },
+          { name:"Single-Arm Dumbbell Row", sets:"3×10/side" },
+          { name:"Reverse Fly", sets:"3×12–15" },
+          { name:"Dumbbell Hammer Curls", sets:"3×10–12" },
+          { name:"Concentration Curls", sets:"2×12–15" },
+        ]},
+      day3:{ id:"day3", label:"Day 3", name:"Legs", focus:"Squat / Hinge / Single-leg",
+        exercises:[
+          { name:"Dumbbell Goblet Squat", sets:"4×8–10" },
+          { name:"Dumbbell Romanian Deadlift", sets:"4×8" },
+          { name:"Dumbbell Walking Lunge", sets:"3×12/leg" },
+          { name:"Dumbbell Bulgarian Split Squat", sets:"3×10/leg" },
+          { name:"Calf Raises (holding dumbbells)", sets:"4×15–20" },
+        ]},
+      day4:{ id:"day4", label:"Day 4", name:"Upper Power", focus:"Heavier work",
+        exercises:[
+          { name:"Dumbbell Floor Press", sets:"4×5–6 (heavy)" },
+          { name:"Dumbbell Row", sets:"4×6–8" },
+          { name:"Dumbbell Push Press", sets:"3×6–8" },
+          { name:"Alternating Dumbbell Curl", sets:"3×10" },
+          { name:"Lateral Raise Finisher", sets:"2×20 (light)" },
+        ]},
+      day5:{ id:"day5", label:"Day 5", name:"Full Body & Core", focus:"Full body + trunk",
+        exercises:[
+          { name:"Dumbbell Clean to Press", sets:"3×8" },
+          { name:"Dumbbell Front Squat", sets:"3×10" },
+          { name:"Dumbbell Deadlift", sets:"3×8" },
+          { name:"Renegade Row", sets:"3×10 (5/side)" },
+          { name:"Plank or Weighted Sit-Up", sets:"3×45 sec" },
+        ]},
+    };
+
+    const CAL_DAYS = [
+      { key:"mon", label:"Mon" }, { key:"tue", label:"Tue" }, { key:"wed", label:"Wed" },
+      { key:"thu", label:"Thu" }, { key:"fri", label:"Fri" }, { key:"sat", label:"Sat" }, { key:"sun", label:"Sun" },
+    ];
+
+    const STORAGE_KEY = "db_strength_pwa_v1";
+    const $ = (id) => document.getElementById(id);
+
+    function loadState(){ try{ const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; } catch(e){ return null; } }
+    function saveState(s){ localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+
+    const pad2 = (n) => String(n).padStart(2,"0");
+    function todayISO(){ const d=new Date(); return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`; }
+    function weekdayKeyFromDate(d=new Date()){ return ["sun","mon","tue","wed","thu","fri","sat"][d.getDay()]; }
+
+    function toast(msg){
+      const t = $("toast");
+      t.textContent = msg;
+      t.style.display = "block";
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(()=> t.style.display="none", 1800);
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;");
+    }
+
+    function defaultLogForPlanId(planId){
+      const def = DAY_DEFS[planId];
+      if(!def) return {};
+      const entries = {};
+      def.exercises.forEach(ex => entries[ex.name] = { weight:"", reps:"", setsDone:false, notes:"" });
+      return entries;
+    }
+    function defaultMiscLog(){ return { title:"", durationMin:"", rpe:"", details:"" }; }
+
+    const state = loadState() || {
+      activeCalDayKey: weekdayKeyFromDate(),
+      schedule: { ...DEFAULT_SCHEDULE },
+      globalNotes: "",
+      autoBackupOnSave: false,
+      logsByPlanId: {},
+      miscByCalDayKey: {},
+      sessions: []
+    };
+
+    function getPlanIdForCalDay(k){ return (state.schedule && state.schedule[k]) ? state.schedule[k] : "off"; }
+    function ensurePlanLog(planId){ if(planId!=="off" && !state.logsByPlanId[planId]) state.logsByPlanId[planId]=defaultLogForPlanId(planId); }
+    function ensureMiscLog(calKey){ if(!state.miscByCalDayKey[calKey]) state.miscByCalDayKey[calKey]=defaultMiscLog(); }
+
+    function planLabel(planId){
+      if(planId==="off") return "Rest / Off";
+      const def = DAY_DEFS[planId];
+      return `${def.label} – ${def.name}`;
+    }
+
+    function exportJsonString(){ return JSON.stringify(state, null, 2); }
+
+    async function shareBackup(){
+      const json = exportJsonString();
+      const filename = `dumbbell_strength_backup_${todayISO()}.json`;
+      const file = new File([json], filename, { type: "application/json" });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] }) && navigator.share){
+        await navigator.share({ title:"Workout Backup", text:"Workout app backup JSON", files:[file] });
+        toast("Shared backup");
+        return;
+      }
+
+      const blob = new Blob([json], { type:"application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      toast("Backup downloaded");
+    }
+
+    function renderDayPills(){
+      const host = $("dayPills");
+      host.innerHTML = "";
+      CAL_DAYS.forEach(cd => {
+        const planId = getPlanIdForCalDay(cd.key);
+        const el = document.createElement("div");
+        el.className = "pill" + (state.activeCalDayKey===cd.key ? " active" : "");
+        el.textContent = cd.label;
+        el.title = `${cd.label}: ${planLabel(planId)}`;
+        el.onclick = () => {
+          state.activeCalDayKey = cd.key;
+          ensureMiscLog(cd.key);
+          ensurePlanLog(getPlanIdForCalDay(cd.key));
+          saveState(state);
+          renderAll();
+        };
+        host.appendChild(el);
+      });
+    }
+
+    function renderMeta(){
+      const calKey = state.activeCalDayKey;
+      const planId = getPlanIdForCalDay(calKey);
+      const calLabel = CAL_DAYS.find(x=>x.key===calKey)?.label || calKey;
+
+      if(planId==="off"){
+        $("dayMeta").innerHTML = `<b>${calLabel} — Rest / Off</b> <span class="muted">• You can log a misc workout below</span>`;
+        return;
+      }
+      const def = DAY_DEFS[planId];
+      $("dayMeta").innerHTML = `<b>${calLabel} — ${def.label} – ${def.name}</b> <span class="muted">• ${def.focus}</span>`;
+    }
+
+    function renderMiscLogger(host){
+      const calKey = state.activeCalDayKey;
+      ensureMiscLog(calKey);
+      const misc = state.miscByCalDayKey[calKey];
+      const planId = getPlanIdForCalDay(calKey);
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "exercise";
+      wrapper.style.marginTop = "12px";
+
+      const title = (planId==="off") ? "Misc Workout (Rest Day Log)" : "Optional: Misc Workout Log";
+      wrapper.innerHTML = `
+        <div class="exerciseTop">
+          <div>
+            <div class="exerciseName">${title}</div>
+            <div class="sets">Cardio, stretching, sports, rehab, etc.</div>
+          </div>
+          <div class="small">${(misc.title || misc.durationMin || misc.details) ? "Draft" : "Empty"}</div>
+        </div>
+
+        <div class="inputs" style="grid-template-columns: 1fr 1fr 1fr;">
+          <div>
+            <label>Activity</label>
+            <input id="miscTitle" placeholder="e.g. 30 min walk" value="${escapeHtml(misc.title)}" />
+          </div>
+          <div>
+            <label>Duration (min)</label>
+            <input id="miscDur" inputmode="numeric" placeholder="e.g. 30" value="${escapeHtml(misc.durationMin)}" />
+          </div>
+          <div>
+            <label>Effort (RPE 1–10)</label>
+            <input id="miscRpe" inputmode="numeric" placeholder="e.g. 6" value="${escapeHtml(misc.rpe)}" />
+          </div>
+        </div>
+
+        <div style="margin-top:10px;">
+          <label style="display:block; font-size:11px; color:#9ca3af; margin-bottom:4px;">Details</label>
+          <textarea id="miscDetails" placeholder="Intervals, pace, stretches, score, how you felt…">${escapeHtml(misc.details)}</textarea>
+        </div>
+
+        <div class="checkRow">
+          <div class="small">This saves with your session when you tap “Save Session”.</div>
+          <button class="btn" id="clearMiscBtn">Clear</button>
+        </div>
+      `;
+      host.appendChild(wrapper);
+
+      const titleEl = wrapper.querySelector("#miscTitle");
+      const durEl   = wrapper.querySelector("#miscDur");
+      const rpeEl   = wrapper.querySelector("#miscRpe");
+      const detEl   = wrapper.querySelector("#miscDetails");
+      const clearBtn= wrapper.querySelector("#clearMiscBtn");
+
+      titleEl.oninput = () => { misc.title = titleEl.value; saveState(state); };
+      durEl.oninput   = () => { misc.durationMin = durEl.value; saveState(state); };
+      rpeEl.oninput   = () => { misc.rpe = rpeEl.value; saveState(state); };
+      detEl.oninput   = () => { misc.details = detEl.value; saveState(state); };
+
+      clearBtn.onclick = () => {
+        state.miscByCalDayKey[calKey] = defaultMiscLog();
+        saveState(state);
+        toast("Misc log cleared");
+        renderAll();
+      };
+    }
+
+    function renderExercises(){
+      const host = $("exerciseList");
+      host.innerHTML = "";
+
+      const planId = getPlanIdForCalDay(state.activeCalDayKey);
+
+      if(planId==="off"){
+        host.innerHTML = `
+          <div class="exercise">
+            <div class="exerciseName">Rest / Off Day</div>
+            <div class="muted" style="margin-top:8px;">
+              Suggestions (optional):<br/>
+              • 15–30 min walk<br/>
+              • 5–10 min mobility (hips/shoulders)<br/>
+              • Light core: plank 2–3×45s
+            </div>
+          </div>
+        `;
+        renderMiscLogger(host);
+        return;
+      }
+
+      ensurePlanLog(planId);
+      const def = DAY_DEFS[planId];
+      const log = state.logsByPlanId[planId];
+
+      def.exercises.forEach(ex => {
+        const box = document.createElement("div");
+        box.className = "exercise";
+
+        const top = document.createElement("div");
+        top.className = "exerciseTop";
+
+        const left = document.createElement("div");
+        left.innerHTML = `<div class="exerciseName">${ex.name}</div><div class="sets">${ex.sets}</div>`;
+
+        const right = document.createElement("div");
+        right.className = "small";
+        right.textContent = log[ex.name]?.setsDone ? "Done" : "Not done";
+
+        top.appendChild(left);
+        top.appendChild(right);
+
+        const inputs = document.createElement("div");
+        inputs.className = "inputs";
+        inputs.innerHTML = `
+          <div><label>Weight (lbs)</label><input inputmode="decimal" placeholder="e.g. 50" value="${escapeHtml(log[ex.name]?.weight ?? "")}" /></div>
+          <div><label>Reps</label><input inputmode="numeric" placeholder="e.g. 8,8,7,6" value="${escapeHtml(log[ex.name]?.reps ?? "")}" /></div>
+          <div><label>Notes</label><input placeholder="tempo, pain, cues…" value="${escapeHtml(log[ex.name]?.notes ?? "")}" /></div>
+        `;
+
+        const weightInput = inputs.querySelectorAll("input")[0];
+        const repsInput   = inputs.querySelectorAll("input")[1];
+        const notesInput  = inputs.querySelectorAll("input")[2];
+
+        weightInput.oninput = () => { log[ex.name].weight = weightInput.value; saveState(state); };
+        repsInput.oninput   = () => { log[ex.name].reps = repsInput.value; saveState(state); };
+        notesInput.oninput  = () => { log[ex.name].notes = notesInput.value; saveState(state); };
+
+        const checkRow = document.createElement("div");
+        checkRow.className = "checkRow";
+
+        const hint = document.createElement("div");
+        hint.className = "small";
+        hint.textContent = "Mark done when you finish this exercise";
+
+        const toggle = document.createElement("div");
+        toggle.className = "toggle" + (log[ex.name]?.setsDone ? " on" : "");
+        toggle.innerHTML = `<div class="knob"></div>`;
+        toggle.onclick = () => {
+          log[ex.name].setsDone = !log[ex.name].setsDone;
+          saveState(state);
+          renderAll();
+        };
+
+        checkRow.appendChild(hint);
+        checkRow.appendChild(toggle);
+
+        box.appendChild(top);
+        box.appendChild(inputs);
+        box.appendChild(checkRow);
+        host.appendChild(box);
+      });
+
+      renderMiscLogger(host);
+    }
+
+    function renderRecent(){
+      const host = $("recentSessions");
+      if(!state.sessions.length){ host.textContent="No sessions yet."; return; }
+      const recent = state.sessions.slice(-8).reverse();
+      host.innerHTML = recent.map(s => {
+        const calLabel = CAL_DAYS.find(x=>x.key===s.calDayKey)?.label || s.calDayKey;
+        const def = (s.planId && s.planId!=="off") ? DAY_DEFS[s.planId] : null;
+        const doneCount = s.snapshot ? Object.values(s.snapshot).filter(x=>x.setsDone).length : 0;
+        const total = def?.exercises?.length || 0;
+        const title = def ? `${calLabel} — ${def.label} – ${def.name}` : `${calLabel} — Rest / Off`;
+        const progress = def ? ` <span class="muted">(${doneCount}/${total} done)</span>` : "";
+        const miscTag = (s.misc && (s.misc.title || s.misc.durationMin || s.misc.details)) ? ` <span class="muted">• Misc logged</span>` : "";
+        return `<div style="margin-bottom:8px;"><b>${s.date}</b> — ${title}${progress}${miscTag}</div>`;
+      }).join("");
+    }
+
+    function syncAutoBackupToggleUI(){
+      const t = $("autoBackupToggle");
+      t.className = "toggle" + (state.autoBackupOnSave ? " on" : "");
+    }
+
+    function renderAll(){
+      renderDayPills();
+      renderMeta();
+      renderExercises();
+      $("globalNotes").value = state.globalNotes || "";
+      syncAutoBackupToggleUI();
+      renderRecent();
+    }
+
+    // UI handlers
+    $("todayBtn").onclick = () => {
+      state.activeCalDayKey = weekdayKeyFromDate();
+      ensureMiscLog(state.activeCalDayKey);
+      ensurePlanLog(getPlanIdForCalDay(state.activeCalDayKey));
+      saveState(state);
+      toast("Jumped to Today");
+      renderAll();
+    };
+
+    $("swapBtn").onclick = () => {
+      const options = CAL_DAYS.map(d=>d.key).join(", ");
+      const a = prompt(`Swap schedule assignments.\nEnter first day key (${options}):`, state.activeCalDayKey);
+      if(!a) return;
+      const b = prompt(`Enter second day key to swap with (${options}):`);
+      if(!b) return;
+
+      const aKey = a.trim().toLowerCase();
+      const bKey = b.trim().toLowerCase();
+      const valid = (k) => CAL_DAYS.some(d => d.key === k);
+
+      if(!valid(aKey) || !valid(bKey)){ alert("Use: mon, tue, wed, thu, fri, sat, sun."); return; }
+      if(aKey === bKey){ toast("Nothing swapped"); return; }
+
+      const tmp = getPlanIdForCalDay(aKey);
+      state.schedule[aKey] = getPlanIdForCalDay(bKey);
+      state.schedule[bKey] = tmp;
+
+      ensurePlanLog(getPlanIdForCalDay(aKey));
+      ensurePlanLog(getPlanIdForCalDay(bKey));
+      saveState(state);
+      toast(`Swapped ${aKey.toUpperCase()} ↔ ${bKey.toUpperCase()}`);
+      renderAll();
+    };
+
+    $("shareBtn").onclick = async () => {
+      try{ await shareBackup(); } catch(e){ alert("Could not share backup on this device/browser."); }
+    };
+
+    $("exportBtn").onclick = async () => {
+      const data = exportJsonString();
+      try{
+        await navigator.clipboard.writeText(data);
+        toast("Export copied to clipboard");
+      }catch(e){
+        const blob = new Blob([data], {type:"application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = `dumbbell_strength_export_${todayISO()}.json`;
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+        toast("Export downloaded");
+      }
+    };
+
+    $("importBtn").onclick = () => {
+      const raw = prompt("Paste your exported JSON here:");
+      if(!raw) return;
+      try{
+        const parsed = JSON.parse(raw);
+        if(!parsed || typeof parsed !== "object") throw new Error("bad");
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+        toast("Imported ✅ (reload)");
+        location.reload();
+      }catch(e){ alert("That didn’t look like valid export JSON."); }
+    };
+
+    $("resetBtn").onclick = () => {
+      if(confirm("Reset all logs and sessions?")){
+        localStorage.removeItem(STORAGE_KEY);
+        location.reload();
+      }
+    };
+
+    $("autoBackupToggle").onclick = () => {
+      state.autoBackupOnSave = !state.autoBackupOnSave;
+      saveState(state);
+      syncAutoBackupToggleUI();
+      toast(state.autoBackupOnSave ? "Auto-backup ON" : "Auto-backup OFF");
+    };
+
+    $("saveSessionBtn").onclick = async () => {
+      const calKey = state.activeCalDayKey;
+      const planId = getPlanIdForCalDay(calKey);
+
+      let snapshot = null;
+      if(planId !== "off"){
+        ensurePlanLog(planId);
+        snapshot = JSON.parse(JSON.stringify(state.logsByPlanId[planId]));
+      }
+
+      ensureMiscLog(calKey);
+      const miscSnapshot = JSON.parse(JSON.stringify(state.miscByCalDayKey[calKey]));
+
+      state.sessions.push({
+        date: todayISO(),
+        calDayKey: calKey,
+        planId,
+        snapshot,
+        misc: miscSnapshot,
+        globalNotes: state.globalNotes || "",
+        scheduleAtTime: JSON.parse(JSON.stringify(state.schedule))
+      });
+
+      saveState(state);
+      toast(planId === "off" ? "Rest day saved ✅" : "Session saved ✅");
+      renderRecent();
+
+      if(state.autoBackupOnSave){
+        try{ await shareBackup(); } catch(e) {}
+      }
+    };
+
+    $("globalNotes").oninput = () => {
+      state.globalNotes = $("globalNotes").value;
+      saveState(state);
+    };
+
+    // Service worker registration
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", async () => {
+        try {
+          await navigator.serviceWorker.register("./service-worker.js");
+        } catch (e) {
+          // If SW fails, app still works online.
+        }
+      });
+    }
+
+    // Init
+    ensureMiscLog(state.activeCalDayKey);
+    ensurePlanLog(getPlanIdForCalDay(state.activeCalDayKey));
+    renderAll();
+  </script>
+</body>
+</html>
